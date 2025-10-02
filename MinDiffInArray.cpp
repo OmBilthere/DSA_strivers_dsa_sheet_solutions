@@ -2,13 +2,13 @@ class Solution {
 public: 
      
     
-    // int helper (int ind , int sum , vector<int>& nums , int size ) {
+    // int helper (int ind , int arr , vector<int>& nums , int size ) {
 
-    // if(size == 0 ) return abs(2*sum - totalsum);
+    // if(size == 0 ) return abs(2*arr - totalsum);
     // if(ind == nums.size()) return INT_MAX;
-    // int take   = helper(ind+1 , sum + nums[ind] , nums , size-1);
+    // int take   = helper(ind+1 , arr + nums[ind] , nums , size-1);
 
-    // int not_take   = helper(ind+1 , sum, nums , size);
+    // int not_take   = helper(ind+1 , arr, nums , size);
     
     // return min(take , not_take);
 
@@ -26,6 +26,7 @@ public:
     //     // return helper ( 0 ,0 , nums , n/2 );
         
      
+    //     below solution is for only positive in this case we have both -ve and +ve
 
     //     vector< bool > prev ( totalsum + 1 , false) ;
       
@@ -68,43 +69,71 @@ public:
     //   Both above solution will give TLE & SLE because size in constraint is given 10^7....
     
 
-    int totalSum = accumulate(begin(nums), end(nums), 0);
-    int n = nums.size();
+  
+    int n = nums.size()/2;
 
-    auto left = findAllSubsetsSum(nums, 0, n / 2 - 1);
-    auto right = findAllSubsetsSum(nums, n / 2, n - 1);
-    int target = totalSum / 2, ans = INT_MAX;
+    int tot = 0;
 
-    //we can take (0 to n/2) length numbers from left
-    for (int i = 0; i <= n / 2; i++) {
-        //now we take rest - (n/2-i) length from right, we sort it to binary search
-        auto r = right[n / 2 - i];
-        sort(begin(r), end(r));
+    vector<int> num1 , num2; 
 
-        for (int curleftSum : left[i]) {
-            int needSumFromRight = target - curleftSum;
-            auto it = lower_bound(begin(r), end(r), needSumFromRight);
-            if (it != end(r))
-                ans = min(ans, abs(totalSum - 2 * (curleftSum + *it)));
+    for(int i=0 ; i< n ; i++) {
+        num1.push_back( nums[i]);
+        num2. push_back(nums[i+n]);
+        tot += nums[i]+nums[i+n];
+
+    }
+     
+
+    vector<vector<int>> sum1 (n+1) , sum2 (n+1);
+
+    generate_subset( 0 , 0 , 0 , sum1 , num1 );
+    generate_subset( 0 , 0 , 0 , sum2 , num2 );
+    
+    for(int i= 0 ; i < n ; i++ )
+    sort(sum2[i].begin() , sum2[i].end());
+
+    int minDiff = INT_MAX;
+
+    for(int i=0 ; i< n ; i ++) 
+
+     minDiff = min (minDiff , solve(sum1[i] , sum2[n-i] , tot));
+    
+
+
+    return minDiff;
+
+   
+    }
+
+    int solve(vector<int>& sum1, vector<int>& sum2, int tot) {
+    int n = sum1.size(), m = sum2.size();
+    int minDiff = INT_MAX;
+    for(int i = 0; i < n; ++i) {
+        int target = tot / 2 - sum1[i];
+        int lb = lower_bound(sum2.begin(), sum2.end(), target) - sum2.begin();
+        if(lb < m) {
+            minDiff = min(minDiff, abs(tot - 2 * (sum1[i] + sum2[lb])));
+        }
+        if(lb > 0) {
+            minDiff = min(minDiff, abs(tot - 2 * (sum1[i] + sum2[lb - 1])));
         }
     }
-    return ans;
-
-    }
-
-    vector<vector<int>> findAllSubsetsSum(vector<int>& nums, int l, int r) {
-    int totLengthOfSubarray = r - l + 1;
-    vector<vector<int>> res(totLengthOfSubarray + 1);
-    for (int i = 0; i < (1 << totLengthOfSubarray); i++) {
-        int sum = 0, countOfChosenNos = 0;
-        for (int j = 0; j < totLengthOfSubarray; j++) {
-            if (i & (1 << j)) {
-                sum += nums[l + j];
-                countOfChosenNos++;
-            }
-        }
-        res[countOfChosenNos].push_back(sum);
-    }
-    return res;
+    return minDiff;
 }
+
+
+
+   void generate_subset ( int ind , int cnt , int currSum ,  vector<vector<int>>& arr ,  
+   
+   vector<int> & num) {
+
+      if( ind == num.size()) {
+         arr[cnt].push_back(currSum);
+         return;
+      }
+      generate_subset (ind+1 , cnt , currSum , arr , num );
+
+      generate_subset (ind+1 , cnt+1 , currSum+num[ind] , arr , num );
+
+   }
 }; 
