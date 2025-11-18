@@ -1,0 +1,46 @@
+class Solution {
+public:
+    int countSquares(vector<vector<int>>& matrix) {
+        
+        int n = matrix.size();
+
+        int m = matrix[0].size();
+
+        vector<vector<int>>dp(n , vector<int>( m , 0 ));
+
+        for(int ind = 0 ; ind< n ; ind++ ) dp[ind][0] = matrix[ind][0];
+
+        for(int ind = 0 ; ind< m ; ind++ ) dp[0][ind] = matrix[0][ind];
+
+        for(int row = 1 ; row < n ; row++ ) {
+            
+            for(int col = 1 ; col < m ; col++ ) {
+
+                if(matrix[row][col] == 0)
+                
+                dp[row][col] = 0;
+
+                else 
+
+                dp[row][col] = 1 + min ({dp[row-1][col] , dp[row][col-1] , dp[row-1][col-1]});
+
+            }
+
+        }
+
+        int squares = 0;
+        
+        for(int row = 0 ; row< n ; row++ ) {
+
+            for(int col = 0 ; col < m ; col++ ) {
+
+                squares += dp[row][col];
+            }
+        }
+
+        return squares;
+
+    }
+
+
+};
